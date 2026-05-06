@@ -1,0 +1,67 @@
+# Baseline three-process stack per implementation landscape §8.1 (Postgres + platform HTTP + worker).
+# Smoke-test without publishing packages: the image is a tiny Node placeholder; swap the final stage
+# when real platform-app + framework bundles are available (see infrastructure/docker/Dockerfile).
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-framework}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-framework}
+      POSTGRES_DB: ${POSTGRES_DB:-framework}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - internal
+
+  app:
+    build:
+      context: .
+      dockerfile: infrastructure/docker/Dockerfile
+    restart: unless-stopped
+    environment:
+      ROLE: http
+      PORT: ${APP_PORT:-3000}
+      DATABASE_URL: ${DATABASE_URL:-postgresql://framework:framework@postgres:5432/framework}
+    ports:
+      - "${APP_PUBLISH_PORT:-3000}:3000"
+    depends_on:
+      - postgres
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "node -e \"fetch('http://127.0.0.1:'+(process.env.PORT||3000)+'/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))\"",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - internal
+
+  app-worker:
+    build:
+      context: .
+      dockerfile: infrastructure/docker/Dockerfile
+    restart: unless-stopped
+    environment:
+      ROLE: worker
+      DATABASE_URL: ${DATABASE_URL:-postgresql://framework:framework@postgres:5432/framework}
+    depends_on:
+      - postgres
+    networks:
+      - internal
+
+volumes:
+  postgres_data:
+
+networks:
+  internal:
+    driver: bridge

@@ -1,0 +1,29 @@
+{
+  "products": [
+    {
+      "package": "@etherisc/product-parametric-insurance",
+      "version": "0.0.1-alpha.0"
+    }
+  ],
+  "scheduler": {
+    "enabled": true
+  },
+  "integrations": {
+    "payments": {
+      "env": "DEPLOYMENT_PAYMENTS_API_KEY"
+    },
+    "tenantProvisioning": {
+      "env": "DEPLOYMENT_TENANT_PROVISIONING_URL"
+    }
+  },
+  "_multiProductExample": [
+    {
+      "package": "@etherisc/product-parametric-insurance",
+      "version": "0.0.1-alpha.0"
+    },
+    {
+      "package": "@etherisc/product-residential-lease",
+      "version": "0.0.1-alpha.0"
+    }
+  ]
+}

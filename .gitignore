@@ -1,0 +1,7 @@
+node_modules/
+dist/
+.env
+config/secrets/*
+!config/secrets/.gitkeep
+!config/secrets/README.md
+.DS_Store

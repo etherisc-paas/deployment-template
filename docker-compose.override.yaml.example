@@ -1,0 +1,10 @@
+# Copy to `docker-compose.override.yaml` for local iteration (gitignored).
+# Examples: bind-mount hot reload, expose Postgres to the host.
+
+services:
+  postgres:
+    ports:
+      - "5432:5432"
+  app:
+    volumes:
+      - ./src:/app/src:ro

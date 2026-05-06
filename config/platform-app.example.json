@@ -1,0 +1,16 @@
+{
+  "applicationName": "deployment-template",
+  "logLevel": "info",
+  "featureFlags": {
+    "catalogWriteEnabled": false
+  },
+  "auth": {
+    "provider": "oidc-placeholder",
+    "issuerUrl": "https://example.auth0.com/",
+    "audience": "https://api.example/audience"
+  },
+  "http": {
+    "listenHost": "0.0.0.0",
+    "port": 3000
+  }
+}

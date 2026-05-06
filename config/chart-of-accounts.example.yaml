@@ -1,0 +1,7 @@
+# Tenant-scoped chart of accounts fragment (illustrative — replace per tenant / product mix).
+tenantId: example-tenant
+currency: EUR
+accounts:
+  - code: "1000"
+    name: Premium income
+    type: income
