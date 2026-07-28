@@ -1,5 +1,5 @@
 {
-  "name": "@etherisc/deployment-template",
+  "name": "@etherisc-paas/deployment-template",
   "version": "0.0.0",
   "private": true,
   "description": "Forkable docker-compose deployment template (thin wrapper over framework + products + platform-app).",
