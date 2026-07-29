@@ -1,0 +1,58 @@
+# Commit trailer taxonomy (RES-22 D-29 / S0-T08 / FOU P21-08).
+# Breaking-change-managed: rename/remove of keys or required-ness is a
+# registry change, not a silent drift.
+#
+# Value vocabulary for Task:/Track:/Plan: follows
+# docs/notes/res22-fou-binding-charter.md (Adaptation A-003).
+# Transcript: = orchestrator run_id (Q-ALIGN-03); human exception form below.
+
+version: 1
+schema_id: commit-trailers.v1
+
+keys:
+  Track:
+    required_mainline: false
+    value_pattern: '^[A-Za-z0-9][A-Za-z0-9._-]*$'
+    notes: FOU track id (e.g. fou)
+  Plan:
+    required_mainline: false
+    value_pattern: '^track\.[a-z0-9]+\.phase\.\d+$'
+    notes: Dotted FOU phase id (e.g. track.fou.phase.21)
+  Task:
+    required_mainline: true
+    value_pattern: '^P\d{2}-\d{2}$'
+    notes: Harness task code (e.g. P21-08), not program S0-T08
+  Transcript:
+    required_mainline: true
+    value_pattern: '^([A-Za-z0-9][A-Za-z0-9._:-]*|human/.+)$'
+    notes: >
+      Orchestrator run_id, or human/<ref> for the Q-ALIGN-03 human
+      exception gate (recorded provenance).
+  Decision:
+    required_mainline: false
+    value_pattern: '^D-\d+$'
+  ADR:
+    required_mainline: false
+    value_pattern: '^ADR-\d{4}$'
+  PDR:
+    required_mainline: false
+    value_pattern: '^PDR-\d{4}$'
+
+mainline_required:
+  - Task
+  - Transcript
+
+env_injection:
+  Task: ARCH_TRAILER_TASK
+  Transcript: ARCH_TRAILER_TRANSCRIPT
+  Track: ARCH_TRAILER_TRACK
+  Plan: ARCH_TRAILER_PLAN
+  Decision: ARCH_TRAILER_DECISION
+  ADR: ARCH_TRAILER_ADR
+  PDR: ARCH_TRAILER_PDR
+
+squash:
+  # GitHub org setting (ALIGN-00): squashMergeCommitMessage=COMMIT_MESSAGES
+  # aggregates commit bodies so trailers survive squash when present on
+  # every constituent commit.
+  forge_message_policy: COMMIT_MESSAGES
