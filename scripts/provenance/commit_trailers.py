@@ -143,7 +143,10 @@ def main(argv: list[str] | None = None) -> int:
     if args.message_file is None and args.message is None:
         parser.error("pass --message-file or --message")
 
-    text = args.message if args.message is not None else args.message_file.read_text(encoding="utf-8")
+    if args.message is not None:
+        text = args.message
+    else:
+        text = args.message_file.read_text(encoding="utf-8")
     tax = load_taxonomy(args.taxonomy)
     result = lint_message(text, taxonomy=tax, require_mainline=not args.allow_empty_trailers)
     if result.ok:
