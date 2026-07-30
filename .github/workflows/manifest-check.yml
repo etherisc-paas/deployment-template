@@ -1,0 +1,31 @@
+# Fan-out template — copy to .github/workflows/manifest-check.yml
+name: Manifest check
+
+on:
+  pull_request:
+    branches: [develop, main]
+  push:
+    branches: [develop, main]
+
+permissions:
+  contents: read
+
+jobs:
+  manifest-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install deps
+        run: pip install pyyaml jsonschema
+
+      - name: Validate module.manifest.yaml (S1 exit / blocking)
+        run: |
+          set -euo pipefail
+          chmod +x scripts/manifest/check_module_manifest.py
+          python scripts/manifest/check_module_manifest.py
