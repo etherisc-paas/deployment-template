@@ -1,0 +1,42 @@
+# Paste into .github/workflows/ci.yml (or pr-checks.yml). Gate L2 jobs with:
+#   needs: classify
+#   if: ${{ github.event_name == 'push' || needs.classify.outputs.force_full == '1' || needs.classify.outputs.need_code == '1' }}
+# Never open L3 (Storybook/e2e/full suite) from lockfile / package.json / ci.yml alone.
+
+  classify:
+    name: Classify (ADR 0078)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      need_code: ${{ steps.paths.outputs.need_code }}
+      need_ci_meta: ${{ steps.paths.outputs.need_ci_meta }}
+      need_docs_only: ${{ steps.paths.outputs.need_docs_only }}
+      force_full: ${{ steps.paths.outputs.force_full }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - id: paths
+        name: Classify changed paths
+        env:
+          GITHUB_BASE_REF: ${{ github.base_ref }}
+        run: |
+          set -euo pipefail
+          FORCE_FULL=0
+          if [ "${{ github.event_name }}" = "push" ]; then FORCE_FULL=1; fi
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            labels='${{ toJson(github.event.pull_request.labels.*.name) }}'
+            case "$labels" in *ci-full*) FORCE_FULL=1 ;; esac
+          fi
+          eval "$(bash scripts/ci/pr_paths.sh)"
+          {
+            echo "need_code=${NEED_CODE}"
+            echo "need_ci_meta=${NEED_CI_META}"
+            echo "need_docs_only=${NEED_DOCS_ONLY}"
+            echo "force_full=${FORCE_FULL}"
+          } >> "$GITHUB_OUTPUT"
+          echo "### ADR 0078 classify" >> "$GITHUB_STEP_SUMMARY"
+          echo "- NEED_CODE=${NEED_CODE} NEED_CI_META=${NEED_CI_META} NEED_DOCS_ONLY=${NEED_DOCS_ONLY} FORCE_FULL=${FORCE_FULL}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- CHANGED_COUNT=${CHANGED_COUNT}" >> "$GITHUB_STEP_SUMMARY"
