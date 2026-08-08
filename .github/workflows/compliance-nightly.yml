@@ -1,0 +1,48 @@
+name: Compliance Check (Nightly)
+
+on:
+  # ADR 0078 / P24-07: compliance is L4 nightly only (not a PR gate).
+  schedule:
+    - cron: '10 2 * * *'
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Check mode'
+        required: true
+        default: 'baseline'
+        type: choice
+        options:
+          - baseline
+          - diff
+      tier:
+        description: 'Tier filter (empty = all)'
+        required: false
+        type: choice
+        options:
+          - ''
+          - static
+          - structural
+          - semantic
+      force_full_baseline:
+        description: 'Baseline only — full re-scan (ignore ledger staleness)'
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  compliance:
+    uses: etherisc-paas/saas-architecture/.github/workflows/compliance-reusable.yml@develop
+    with:
+      event_name: ${{ github.event_name }}
+      pr_base_ref: ${{ github.base_ref || 'develop' }}
+      mode: ${{ inputs.mode || 'baseline' }}
+      tier: ${{ inputs.tier || '' }}
+      force_full_baseline: ${{ github.event_name == 'workflow_dispatch' && inputs.force_full_baseline || false }}
+      self_hosted_entities: 'false'
+    secrets:
+      SAAS_ARCH_TOKEN: ${{ secrets.SAAS_ARCH_TOKEN }}
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
