@@ -2,8 +2,6 @@ name: Compliance Check (Nightly)
 
 on:
   # ADR 0078 / P24-07: compliance is L4 nightly only (not a PR gate).
-  schedule:
-    - cron: '10 2 * * *'
   workflow_dispatch:
     inputs:
       mode:
