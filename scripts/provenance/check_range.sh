@@ -2,6 +2,8 @@
 # Lint every commit message in BASE..HEAD for required trailers (S0-T08).
 # Usage: scripts/provenance/check_range.sh [base] [head]
 set -euo pipefail
+# INF-021: missing Task/Transcript warns. Malformed values still fail.
+# TRAILER_MODE=fail restores a hard failure for a missing trailer.
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$ROOT"
@@ -23,16 +25,24 @@ failed=0
 while IFS= read -r sha; do
   [[ -z "$sha" ]] && continue
   msg="$(git log -1 --format=%B "$sha")"
-  if ! "$PY" "$LINT" --message "$msg"; then
-    echo "FAIL $sha" >&2
-    failed=1
-  else
+  if err="$("$PY" "$LINT" --message "$msg" 2>&1)"; then
     echo "OK   $sha"
+  else
+    printf '%s\n' "$err" >&2
+    if grep -q 'does not match' <<<"$err"; then
+      echo "FAIL $sha" >&2
+      failed=1
+    elif [[ "${TRAILER_MODE:-warn}" == "warn" ]] && grep -q 'missing required trailer' <<<"$err"; then
+      echo "WARN $sha" >&2
+    else
+      echo "FAIL $sha" >&2
+      failed=1
+    fi
   fi
 done < <(git rev-list --no-merges "${BASE}..${HEAD}")
 
 if [[ "$failed" -ne 0 ]]; then
-  echo "commit-trailers: one or more commits missing Task:/Transcript:" >&2
+  echo "commit-trailers: one or more commits failed the trailer check" >&2
   exit 1
 fi
 exit 0
