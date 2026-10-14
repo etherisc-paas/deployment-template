@@ -32,3 +32,16 @@ jobs:
             chmod +x scripts/provenance/check_range.sh
             ./scripts/provenance/check_range.sh "$BASE" "$HEAD"
           fi
+
+  gate:
+    name: gate
+    if: always()
+    needs: [satellite-gates]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Every needed job succeeded or was skipped
+        env:
+          RESULTS: ${{ toJSON(needs.*.result) }}
+        run: |
+          echo "$RESULTS"
+          echo "$RESULTS" | jq -e 'all(.[]; . == "success" or . == "skipped")'
