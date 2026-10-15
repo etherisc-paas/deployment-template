@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+# Inject provenance trailers from ARCH_TRAILER_* env (S0-T08 / P21-08).
+set -euo pipefail
+
+MSG_FILE="${1:-}"
+SOURCE="${2:-}"
+[[ -z "$MSG_FILE" || ! -f "$MSG_FILE" ]] && exit 0
+if [[ "${SOURCE:-}" == "merge" || "${SOURCE:-}" == "squash" ]]; then
+  exit 0
+fi
+
+# Missing Task: branch code (pNN-NN or pNN-ANN), otherwise P00-00.
+# P00-00 matches the pattern and is accepted. It is only the fallback.
+task_from_branch() {
+  local branch suffix
+  branch="$(git rev-parse --abbrev-ref HEAD 2>/dev/null || true)"
+  if [[ "$branch" =~ [Pp]([0-9]{2})-([0-9]{2}|[Aa][0-9]{2}) ]]; then
+    suffix="${BASH_REMATCH[2]}"
+    suffix="$(printf '%s' "$suffix" | tr '[:lower:]' '[:upper:]')"
+    printf 'P%s-%s' "${BASH_REMATCH[1]}" "$suffix"
+    return
+  fi
+  printf 'P00-00'
+}
+
+append_if_missing() {
+  local key="$1"
+  local val="$2"
+  [[ -z "$val" ]] && return 0
+  if grep -qE "^${key}:[[:space:]]" "$MSG_FILE"; then
+    return 0
+  fi
+  if [[ -s "$MSG_FILE" ]] && [[ -n "$(tail -c1 "$MSG_FILE" || true)" ]]; then
+    printf '\n' >>"$MSG_FILE"
+  fi
+  if ! grep -qE '^[A-Za-z][A-Za-z0-9-]*:' "$MSG_FILE"; then
+    printf '\n' >>"$MSG_FILE"
+  fi
+  printf '%s: %s\n' "$key" "$val" >>"$MSG_FILE"
+}
+
+append_if_missing "Task" "${ARCH_TRAILER_TASK:-$(task_from_branch)}"
+append_if_missing "Transcript" "${ARCH_TRAILER_TRANSCRIPT:-${RUN_ID:-human/unspecified-$(date +%F)}}"
+append_if_missing "Track" "${ARCH_TRAILER_TRACK:-}"
+append_if_missing "Plan" "${ARCH_TRAILER_PLAN:-}"
+append_if_missing "Decision" "${ARCH_TRAILER_DECISION:-}"
+append_if_missing "ADR" "${ARCH_TRAILER_ADR:-}"
+append_if_missing "PDR" "${ARCH_TRAILER_PDR:-}"
+exit 0
