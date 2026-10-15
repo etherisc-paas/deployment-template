@@ -44,4 +44,5 @@ jobs:
           RESULTS: ${{ toJSON(needs.*.result) }}
         run: |
           echo "$RESULTS"
-          echo "$RESULTS" | jq -e 'all(.[]; . == "success" or . == "skipped")'
+          echo "intentional red gate for the gov/23 counter-check"
+          exit 1
