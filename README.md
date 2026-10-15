@@ -49,3 +49,4 @@ Expect Postgres healthy, HTTP 200 on `http://localhost:3000/health`, worker logs
 | `scripts/` | Commented ops placeholders (`deploy`, `backup`, `restore`). |
 
 See `docs/operations.md` for deploy / rollback / backup expectations.
+<!-- merge-method probe 2026-10-15: this pull request is closed unmerged. -->
