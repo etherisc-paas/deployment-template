@@ -20,8 +20,11 @@ keys:
     notes: Dotted FOU phase id (e.g. track.fou.phase.21)
   Task:
     required_mainline: true
-    value_pattern: '^P\d{2}-(\d{2}|A\d{2})$'
-    notes: Harness task code (e.g. P21-08) or ad-hoc code (e.g. P21-A01), not program S0-T08
+    value_pattern: '^(?:[A-Za-z0-9]+/)?P\d{2}-(?:\d{2}|A\d+)$'
+    notes: >
+      Harness task code (e.g. P21-08), ad-hoc code (e.g. P23-A1), or
+      TRACK/Pnn-nn (e.g. GOV/P23-A1). The track prefix is optional here.
+      Same pattern as saas-architecture/.github/workflows/commit-trailers.yml.
   Transcript:
     required_mainline: true
     value_pattern: '^([A-Za-z0-9][A-Za-z0-9._:-]*|human/.+)$'

@@ -20,6 +20,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      # This public repository cannot call the private reusable workflow.
+      # Pattern source: etherisc-paas/saas-architecture/.github/workflows/commit-trailers.yml
       - name: Satellite gates (manifest, trailers)
         env:
           BASE: ${{ github.event.pull_request.base.sha }}
