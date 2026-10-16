@@ -33,6 +33,10 @@ permissions:
 
 jobs:
   compliance:
+    permissions:
+      id-token: write
+      contents: read
+      issues: write
     uses: etherisc-paas/saas-architecture/.github/workflows/compliance-reusable.yml@develop
     with:
       event_name: ${{ github.event_name }}
@@ -41,6 +45,6 @@ jobs:
       tier: ${{ inputs.tier || '' }}
       force_full_baseline: ${{ github.event_name == 'workflow_dispatch' && inputs.force_full_baseline || false }}
       self_hosted_entities: 'false'
+      broker_role: deployment-template-compliance-nightly
     secrets:
-      SAAS_ARCH_TOKEN: ${{ secrets.SAAS_ARCH_TOKEN }}
       ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
